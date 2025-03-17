@@ -69,9 +69,27 @@ func (app *application) mount() http.Handler {
 				r.Delete("/", app.deleteTargetHandler)
 			})
 		})
+
+		// equipment endpoints
+		r.Route("/equipment", func(r chi.Router) {
+			r.Post("/", app.createEquipmentHandler)
+			r.Get("/", app.fetchEquipmentsHandler)
+
+			r.Route("/{equipmentId}", func(r chi.Router) {
+				r.Use(app.equipmentContextMiddleware)
+				r.Get("/", app.getEquipmentHandler)
+				r.Patch("/", app.updateEquipmentHandler)
+				r.Delete("/", app.deleteEquipmentHandler)
+			})
+		})
+
 		// workouts endpoints
 		r.Route("/workouts", func(r chi.Router) {
 			r.Post("/", app.createWorkoutHandler)
+			r.Route("/{workoutId}", func(r chi.Router) {
+				r.Use(app.workoutContextMiddleware)
+				r.Get("/", app.getWorkoutHandler)
+			})
 		})
 	})
 

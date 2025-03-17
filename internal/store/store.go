@@ -26,6 +26,18 @@ type Storage struct {
 		GetAll(context.Context) ([]PresentableTarget, error)
 		Update(context.Context, *PresentableTarget) error
 		Delete(context.Context, int64) error
+		GetByWorkoutID(context.Context, int64) (*string, []*string, error)
+	}
+	Equipment interface {
+		Create(context.Context, *Equipment) error
+		GetByID(context.Context, int64) (*Equipment, error)
+		GetAll(context.Context) ([]Equipment, error)
+		Update(context.Context, *Equipment) error
+		Delete(context.Context, int64) error
+	}
+	Workouts interface {
+		CreateAndLinkTargets(context.Context, *Workout, int64, []int64) error
+		GetByID(context.Context, int64) (*PresentableWorkout, error)
 	}
 }
 
@@ -33,5 +45,21 @@ func NewStorage(db *sql.DB) Storage {
 	return Storage{
 		BodyParts: &BodyPartStore{db},
 		Targets:   &TargetStore{db},
+		Equipment: &EquipmentStore{db},
+		Workouts:  &WorkoutStore{db},
 	}
+}
+
+func withTx(ctx context.Context, db *sql.DB, fn func(*sql.Tx) error) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	if err := fn(tx); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	return tx.Commit()
 }

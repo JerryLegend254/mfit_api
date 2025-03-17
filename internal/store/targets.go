@@ -138,3 +138,35 @@ func (s *TargetStore) Update(ctx context.Context, target *PresentableTarget) err
 	return nil
 
 }
+
+func (s *TargetStore) GetByWorkoutID(ctx context.Context, workoutId int64) (*string, []*string, error) {
+	var primaryTarget *string
+	var secondaryTargets []*string
+
+	query := `
+    SELECT t.name, wt.type
+    FROM workout_target wt
+    JOIN target t ON t.id = wt.target_id
+    WHERE wt.workout_id = $1`
+
+	rows, err := s.db.QueryContext(ctx, query, workoutId)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var t Target
+		var targetType *string
+		if err := rows.Scan(&t.Name, &targetType); err != nil {
+			return nil, nil, err
+		}
+		if targetType != nil && *targetType == "primary" {
+			primaryTarget = &t.Name
+		} else {
+			secondaryTargets = append(secondaryTargets, &t.Name)
+		}
+	}
+
+	return primaryTarget, secondaryTargets, nil
+}

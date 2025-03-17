@@ -59,7 +59,7 @@ func (app *application) createTargetHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if err = app.jsonResponse(w, http.StatusCreated, &target); err != nil {
+	if err = app.jsonResponse(w, http.StatusCreated, target); err != nil {
 		app.internalServerError(w, r, err)
 	}
 }
