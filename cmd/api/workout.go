@@ -78,33 +78,33 @@ func (app *application) createWorkoutHandler(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-// // GetAllWorkouts godoc
-// //
-// //	@Summary		Fetch all workout
-// //	@Description	Fetch all workout
-// //	@Tags			workouts
-// //	@Accept			json
-// //	@Produce		json
-// //	@Success		200	{object}	[]store.Workout
-// //	@Failure		403	{object}	error
-// //	@Failure		500	{object}	error
-// //	@Security		ApiKeyAuth
-// //	@Router			/workouts [get]
+// GetAllWorkouts godoc
 //
-//	func (app *application) fetchWorkoutsHandler(w http.ResponseWriter, r *http.Request) {
-//		ctx := r.Context()
-//
-//		workouts, err := app.store.Workouts.GetAll(ctx)
-//		if err != nil {
-//			app.internalServerError(w, r, err)
-//			return
-//		}
-//
-//		if err = app.jsonResponse(w, http.StatusOK, workouts); err != nil {
-//			app.internalServerError(w, r, err)
-//		}
-//	}
-//
+//	@Summary		Fetch all workout
+//	@Description	Fetch all workout
+//	@Tags			workouts
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	[]store.Workout
+//	@Failure		403	{object}	error
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/workouts [get]
+
+func (app *application) fetchWorkoutsHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	workouts, err := app.store.Workouts.GetAll(ctx)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err = app.jsonResponse(w, http.StatusOK, workouts); err != nil {
+		app.internalServerError(w, r, err)
+	}
+}
+
 // GetWorkout godoc
 //
 //	@Summary		Fetches a workout
@@ -119,16 +119,8 @@ func (app *application) createWorkoutHandler(w http.ResponseWriter, r *http.Requ
 //	@Security		ApiKeyAuth
 //	@Router			/workouts/{workoutId} [get]
 func (app *application) getWorkoutHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	_ = r.Context()
 	workout := getWorkoutFromContext(r)
-	primaryTarget, secondaryTargets, err := app.store.Targets.GetByWorkoutID(ctx, workout.ID)
-	if err != nil {
-		app.internalServerError(w, r, err)
-	}
-
-	workout.PrimaryTarget = *primaryTarget
-	workout.SecondaryTargets = secondaryTargets
-
 	if err := app.jsonResponse(w, http.StatusOK, workout); err != nil {
 		app.internalServerError(w, r, err)
 	}

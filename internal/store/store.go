@@ -26,7 +26,6 @@ type Storage struct {
 		GetAll(context.Context) ([]PresentableTarget, error)
 		Update(context.Context, *PresentableTarget) error
 		Delete(context.Context, int64) error
-		GetByWorkoutID(context.Context, int64) (*string, []*string, error)
 	}
 	Equipment interface {
 		Create(context.Context, *Equipment) error
@@ -38,6 +37,7 @@ type Storage struct {
 	Workouts interface {
 		CreateAndLinkTargets(context.Context, *Workout, int64, []int64) error
 		GetByID(context.Context, int64) (*PresentableWorkout, error)
+		GetAll(context.Context) ([]PresentableWorkout, error)
 	}
 }
 

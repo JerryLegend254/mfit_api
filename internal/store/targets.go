@@ -139,7 +139,7 @@ func (s *TargetStore) Update(ctx context.Context, target *PresentableTarget) err
 
 }
 
-func (s *TargetStore) GetByWorkoutID(ctx context.Context, workoutId int64) (*string, []*string, error) {
+func GetTargetsByWorkoutID(db *sql.DB, ctx context.Context, workoutId int64) (*string, []*string, error) {
 	var primaryTarget *string
 	var secondaryTargets []*string
 
@@ -149,7 +149,7 @@ func (s *TargetStore) GetByWorkoutID(ctx context.Context, workoutId int64) (*str
     JOIN target t ON t.id = wt.target_id
     WHERE wt.workout_id = $1`
 
-	rows, err := s.db.QueryContext(ctx, query, workoutId)
+	rows, err := db.QueryContext(ctx, query, workoutId)
 	if err != nil {
 		return nil, nil, err
 	}

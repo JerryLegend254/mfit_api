@@ -86,6 +86,7 @@ func (app *application) mount() http.Handler {
 		// workouts endpoints
 		r.Route("/workouts", func(r chi.Router) {
 			r.Post("/", app.createWorkoutHandler)
+			r.Get("/", app.fetchWorkoutsHandler)
 			r.Route("/{workoutId}", func(r chi.Router) {
 				r.Use(app.workoutContextMiddleware)
 				r.Get("/", app.getWorkoutHandler)

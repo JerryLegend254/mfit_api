@@ -134,9 +134,10 @@ func (s *WorkoutStore) linkTargets(ctx context.Context, tx *sql.Tx, workoutId in
 func (s *WorkoutStore) GetAll(ctx context.Context) ([]PresentableWorkout, error) {
 	query := `
     SELECT
-    t.id, t.name, b.id, b.name
-    FROM workout t
-    JOIN body_part b on t.bodypart_id = b.id
+    w.id, w.name, b.name, e.name, w.gif_url, w.difficulty, w.instructions, w.calories_burned, w.duration_minutes
+    FROM workout w
+    JOIN body_part b ON w.bodypart_id = b.id
+    LEFT JOIN equipment e ON w.equipment_id = e.id
     ;`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
@@ -150,16 +151,26 @@ func (s *WorkoutStore) GetAll(ctx context.Context) ([]PresentableWorkout, error)
 
 	var presentableWorkouts []PresentableWorkout
 	for rows.Next() {
-		var t PresentableWorkout
+		var p PresentableWorkout
 		err := rows.Scan(
-			&t.ID,
-			&t.Name,
-			&t.BodyPart,
+
+			&p.ID,
+			&p.Name,
+			&p.BodyPart,
+			&p.Equipment,
+			&p.GifUrl,
+			&p.Difficulty,
+			pq.Array(&p.Instructions),
+			&p.CaloriesBurned,
+			&p.DurationMinutes,
 		)
 		if err != nil {
 			return nil, err
 		}
-		presentableWorkouts = append(presentableWorkouts, t)
+		primaryTarget, secondaryTargets, err := GetTargetsByWorkoutID(s.db, ctx, p.ID)
+		p.PrimaryTarget = *primaryTarget
+		p.SecondaryTargets = secondaryTargets
+		presentableWorkouts = append(presentableWorkouts, p)
 	}
 
 	return presentableWorkouts, nil
@@ -197,6 +208,10 @@ func (s *WorkoutStore) GetByID(ctx context.Context, id int64) (*PresentableWorko
 			return nil, err
 		}
 	}
+
+	primaryTarget, secondaryTargets, err := GetTargetsByWorkoutID(s.db, ctx, presentableWorkout.ID)
+	presentableWorkout.PrimaryTarget = *primaryTarget
+	presentableWorkout.SecondaryTargets = secondaryTargets
 
 	return &presentableWorkout, nil
 }
