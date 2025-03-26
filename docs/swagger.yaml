@@ -1,0 +1,687 @@
+definitions:
+  main.CreateBodyPartPayload:
+    properties:
+      image_url:
+        maxLength: 255
+        type: string
+      name:
+        maxLength: 40
+        type: string
+    required:
+    - image_url
+    - name
+    type: object
+  main.CreateEquipmentPayload:
+    properties:
+      name:
+        maxLength: 40
+        type: string
+    required:
+    - name
+    type: object
+  main.CreateTargetPayload:
+    properties:
+      bodypart_id:
+        type: integer
+      name:
+        maxLength: 40
+        type: string
+    required:
+    - bodypart_id
+    - name
+    type: object
+  main.CreateWorkoutPayload:
+    properties:
+      bodypart_id:
+        type: integer
+      calories_burned:
+        type: integer
+      difficulty:
+        type: string
+      duration_minutes:
+        type: integer
+      equipment_id:
+        type: integer
+      gif_url:
+        type: string
+      instructions:
+        items:
+          type: string
+        type: array
+      name:
+        maxLength: 40
+        type: string
+      primary_target:
+        type: integer
+      secondary_targets:
+        items:
+          type: integer
+        type: array
+    required:
+    - bodypart_id
+    - difficulty
+    - equipment_id
+    - name
+    - primary_target
+    - secondary_targets
+    type: object
+  main.UpdateBodyPartPayload:
+    properties:
+      image_url:
+        maxLength: 255
+        type: string
+      name:
+        maxLength: 40
+        type: string
+    type: object
+  main.UpdateEquipmentPayload:
+    properties:
+      name:
+        maxLength: 40
+        type: string
+    type: object
+  main.UpdateTargetPayload:
+    properties:
+      bodypart_id:
+        type: integer
+      name:
+        maxLength: 40
+        type: string
+    type: object
+  store.BodyPart:
+    properties:
+      id:
+        type: integer
+      image_url:
+        type: string
+      name:
+        type: string
+    type: object
+  store.Equipment:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  store.Target:
+    properties:
+      bodypart_id:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  store.Workout:
+    properties:
+      bodypart_id:
+        type: integer
+      calories_burned:
+        type: integer
+      difficulty:
+        type: string
+      duration_minutes:
+        type: integer
+      equipment_id:
+        type: integer
+      gif_url:
+        type: string
+      id:
+        type: integer
+      instructions:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+    type: object
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is an API for a fitness application
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: MFit API
+paths:
+  /bodyparts:
+    get:
+      consumes:
+      - application/json
+      description: Fetch all body parts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.BodyPart'
+            type: array
+        "403":
+          description: Forbidden
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch all body parts
+      tags:
+      - body parts
+    post:
+      consumes:
+      - application/json
+      description: Creates a body part
+      parameters:
+      - description: BodyPart payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateBodyPartPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/store.BodyPart'
+        "400":
+          description: Bad Request
+          schema: {}
+        "403":
+          description: Forbidden
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Creates a body part
+      tags:
+      - body parts
+  /bodyparts/{bodyPartId}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a body part by ID
+      parameters:
+      - description: Body Part ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Deletes a body part
+      tags:
+      - body parts
+    get:
+      consumes:
+      - application/json
+      description: Fetches a body part by ID
+      parameters:
+      - description: Body Part ID
+        in: path
+        name: bodyPartId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.BodyPart'
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Fetches a body part
+      tags:
+      - body parts
+    patch:
+      consumes:
+      - application/json
+      description: Update a body part by ID
+      parameters:
+      - description: Body Part ID
+        in: path
+        name: bodyPartId
+        required: true
+        type: integer
+      - description: Body Part ID
+        in: body
+        name: bodyPartId
+        required: true
+        schema:
+          $ref: '#/definitions/main.UpdateBodyPartPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.BodyPart'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update a body part
+      tags:
+      - body parts
+  /equipment:
+    get:
+      consumes:
+      - application/json
+      description: Fetch all equipment
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.Equipment'
+            type: array
+        "403":
+          description: Forbidden
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch all equipment
+      tags:
+      - equipment
+    post:
+      consumes:
+      - application/json
+      description: Creates a equipment
+      parameters:
+      - description: Equipment payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateEquipmentPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/store.Equipment'
+        "400":
+          description: Bad Request
+          schema: {}
+        "403":
+          description: Forbidden
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Creates a equipment
+      tags:
+      - equipment
+  /equipment/{equipmentId}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a equipment by ID
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Deletes a equipment
+      tags:
+      - equipment
+    get:
+      consumes:
+      - application/json
+      description: Fetches a equipment by ID
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: equipmentId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Equipment'
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Fetches a equipment
+      tags:
+      - equipment
+    patch:
+      consumes:
+      - application/json
+      description: Update a equipment by ID
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: equipmentId
+        required: true
+        type: integer
+      - description: Equipment ID
+        in: body
+        name: equipmentId
+        required: true
+        schema:
+          $ref: '#/definitions/main.UpdateEquipmentPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Equipment'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update a equipment
+      tags:
+      - equipment
+  /targets:
+    get:
+      consumes:
+      - application/json
+      description: Fetch all target
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.Target'
+            type: array
+        "403":
+          description: Forbidden
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch all target
+      tags:
+      - targets
+    post:
+      consumes:
+      - application/json
+      description: Creates a target
+      parameters:
+      - description: Target payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateTargetPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/store.Target'
+        "400":
+          description: Bad Request
+          schema: {}
+        "403":
+          description: Forbidden
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Creates a target
+      tags:
+      - targets
+  /targets/{targetId}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a target by ID
+      parameters:
+      - description: Target ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Deletes a target
+      tags:
+      - targets
+    get:
+      consumes:
+      - application/json
+      description: Fetches a target by ID
+      parameters:
+      - description: Target ID
+        in: path
+        name: targetId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Target'
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Fetches a target
+      tags:
+      - targets
+    patch:
+      consumes:
+      - application/json
+      description: Update a target by ID
+      parameters:
+      - description: Target ID
+        in: path
+        name: targetId
+        required: true
+        type: integer
+      - description: Target ID
+        in: body
+        name: targetId
+        required: true
+        schema:
+          $ref: '#/definitions/main.UpdateTargetPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Target'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update a target
+      tags:
+      - targets
+  /workouts:
+    post:
+      consumes:
+      - application/json
+      description: Creates a workout
+      parameters:
+      - description: Workout payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateWorkoutPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/store.Workout'
+        "400":
+          description: Bad Request
+          schema: {}
+        "403":
+          description: Forbidden
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Creates a workout
+      tags:
+      - workouts
+  /workouts/{workoutId}:
+    get:
+      consumes:
+      - application/json
+      description: Fetches a workout by ID
+      parameters:
+      - description: Workout ID
+        in: path
+        name: workoutId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Workout'
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Fetches a workout
+      tags:
+      - workouts
+swagger: "2.0"
