@@ -53,8 +53,14 @@ func (app *application) createEquipmentHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	if err = app.store.Equipment.Create(ctx, &equipment); err != nil {
-		app.internalServerError(w, r, err)
+		switch err {
+		case store.ErrDuplicate:
+			app.conflictError(w, r, store.ErrDuplicateName)
+		default:
+			app.internalServerError(w, r, err)
+		}
 		return
+
 	}
 
 	if err = app.jsonResponse(w, http.StatusCreated, &equipment); err != nil {

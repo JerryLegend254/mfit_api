@@ -3,6 +3,8 @@ package store
 import (
 	"context"
 	"database/sql"
+
+	"github.com/lib/pq"
 )
 
 type EquipmentStore struct {
@@ -21,6 +23,10 @@ func (s *EquipmentStore) Create(ctx context.Context, equipment *Equipment) error
 	defer cancel()
 
 	if err := s.db.QueryRowContext(ctx, query, &equipment.Name).Scan(&equipment.ID); err != nil {
+		// check unique constraints validation
+		if pgErr, ok := err.(*pq.Error); ok && pgErr.Code == "23505" {
+			return ErrDuplicate
+		}
 		return err
 	}
 

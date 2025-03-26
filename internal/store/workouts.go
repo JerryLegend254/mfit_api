@@ -11,6 +11,20 @@ type WorkoutStore struct {
 	db *sql.DB
 }
 
+type WorkoutDifficulty string
+
+type CreateWorkoutPayload struct {
+	Name             string            `json:"name"`
+	BodyPartID       int64             `json:"bodypart_id"`
+	EquipmentID      int64             `json:"equipment_id"`
+	GifUrl           string            `json:"gif_url"`
+	Instructions     []string          `json:"instructions"`
+	CaloriesBurned   uint8             `json:"calories_burned"`
+	DurationMinutes  uint8             `json:"duration_minutes"`
+	Difficulty       WorkoutDifficulty `json:"difficulty"`
+	PrimaryTarget    int64             `json:"primary_target"`
+	SecondaryTargets []int64           `json:"secondary_targets"`
+}
 type Workout struct {
 	ID              int64    `json:"id"`
 	Name            string   `json:"name"`
@@ -61,6 +75,10 @@ func (s *WorkoutStore) create(ctx context.Context, tx *sql.Tx, workout *Workout)
 		&workout.DurationMinutes,
 		&workout.Difficulty,
 	).Scan(&workout.ID); err != nil {
+		// check unique constraints validation
+		if pgErr, ok := err.(*pq.Error); ok && pgErr.Code == "23505" {
+			return ErrDuplicate
+		}
 		return err
 	}
 
@@ -167,9 +185,13 @@ func (s *WorkoutStore) GetAll(ctx context.Context) ([]PresentableWorkout, error)
 		if err != nil {
 			return nil, err
 		}
+
 		primaryTarget, secondaryTargets, err := GetTargetsByWorkoutID(s.db, ctx, p.ID)
 		p.PrimaryTarget = *primaryTarget
 		p.SecondaryTargets = secondaryTargets
+		if err != nil {
+			return nil, err
+		}
 		presentableWorkouts = append(presentableWorkouts, p)
 	}
 
@@ -212,6 +234,9 @@ func (s *WorkoutStore) GetByID(ctx context.Context, id int64) (*PresentableWorko
 	primaryTarget, secondaryTargets, err := GetTargetsByWorkoutID(s.db, ctx, presentableWorkout.ID)
 	presentableWorkout.PrimaryTarget = *primaryTarget
 	presentableWorkout.SecondaryTargets = secondaryTargets
+	if err != nil {
+		return nil, err
+	}
 
 	return &presentableWorkout, nil
 }

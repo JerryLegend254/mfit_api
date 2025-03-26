@@ -37,6 +37,10 @@ definitions:
       calories_burned:
         type: integer
       difficulty:
+        enum:
+        - beginner
+        - intermediate
+        - advanced
         type: string
       duration_minutes:
         type: integer
@@ -103,6 +107,35 @@ definitions:
         type: integer
       name:
         type: string
+    type: object
+  store.PresentableWorkout:
+    properties:
+      body_part:
+        type: string
+      calories_burned:
+        type: integer
+      difficulty:
+        type: string
+      duration_minutes:
+        type: integer
+      equipment:
+        type: string
+      gif_url:
+        type: string
+      id:
+        type: integer
+      instructions:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      primary_target:
+        type: string
+      secondary_targets:
+        items:
+          type: string
+        type: array
     type: object
   store.Target:
     properties:
@@ -623,6 +656,30 @@ paths:
       tags:
       - targets
   /workouts:
+    get:
+      consumes:
+      - application/json
+      description: Fetch all workout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.PresentableWorkout'
+            type: array
+        "403":
+          description: Forbidden
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch all workout
+      tags:
+      - workouts
     post:
       consumes:
       - application/json
@@ -672,7 +729,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/store.Workout'
+            $ref: '#/definitions/store.PresentableWorkout'
         "404":
           description: Not Found
           schema: {}

@@ -55,7 +55,12 @@ func (app *application) createTargetHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err = app.store.Targets.Create(ctx, &target); err != nil {
-		app.internalServerError(w, r, err)
+		switch err {
+		case store.ErrDuplicate:
+			app.conflictError(w, r, store.ErrDuplicateName)
+		default:
+			app.internalServerError(w, r, err)
+		}
 		return
 	}
 

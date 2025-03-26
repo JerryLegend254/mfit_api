@@ -3,6 +3,8 @@ package store
 import (
 	"context"
 	"database/sql"
+
+	"github.com/lib/pq"
 )
 
 type BodyPartStore struct {
@@ -22,7 +24,12 @@ func (s *BodyPartStore) Create(ctx context.Context, bodyPart *BodyPart) error {
 	defer cancel()
 
 	if err := s.db.QueryRowContext(ctx, query, &bodyPart.Name, &bodyPart.ImageUrl).Scan(&bodyPart.ID); err != nil {
+		// check unique constraints validation
+		if pgErr, ok := err.(*pq.Error); ok && pgErr.Code == "23505" {
+			return ErrDuplicate
+		}
 		return err
+
 	}
 
 	return nil

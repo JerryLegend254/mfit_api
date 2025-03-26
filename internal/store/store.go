@@ -10,6 +10,8 @@ import (
 var (
 	QueryTimeoutDuration = time.Second * 5
 	ErrNotFound          = errors.New("resource not found")
+	ErrDuplicate         = errors.New("duplicate entry already exists")
+	ErrDuplicateName     = errors.New("duplicate resource with name already exists")
 )
 
 type Storage struct {

@@ -8,7 +8,8 @@ import (
 	"github.com/JerryLegend254/mfit_api/internal/store"
 )
 
-var version = "0.0.0"
+// TODO: make use of version after adding changelog for sem ver
+//var version = "0.0.0"
 
 //	@title			MFit API
 //	@description	This is an API for a fitness application

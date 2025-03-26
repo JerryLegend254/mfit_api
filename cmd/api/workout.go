@@ -23,7 +23,7 @@ type CreateWorkoutPayload struct {
 	Instructions     []string `json:"instructions"`
 	CaloriesBurned   uint8    `json:"calories_burned"`
 	DurationMinutes  uint8    `json:"duration_minutes"`
-	Difficulty       string   `json:"difficulty" validate:"required"`
+	Difficulty       string   `json:"difficulty" validate:"required,oneof=beginner intermediate advanced"`
 	PrimaryTarget    int64    `json:"primary_target" validate:"required"`
 	SecondaryTargets []int64  `json:"secondary_targets" validate:"required"`
 }
@@ -69,7 +69,12 @@ func (app *application) createWorkoutHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	if err = app.store.Workouts.CreateAndLinkTargets(ctx, &workout, payload.PrimaryTarget, payload.SecondaryTargets); err != nil {
-		app.internalServerError(w, r, err)
+		switch err {
+		case store.ErrDuplicate:
+			app.conflictError(w, r, store.ErrDuplicateName)
+		default:
+			app.internalServerError(w, r, err)
+		}
 		return
 	}
 
@@ -85,12 +90,11 @@ func (app *application) createWorkoutHandler(w http.ResponseWriter, r *http.Requ
 //	@Tags			workouts
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	[]store.Workout
+//	@Success		200	{object}	[]store.PresentableWorkout
 //	@Failure		403	{object}	error
 //	@Failure		500	{object}	error
 //	@Security		ApiKeyAuth
 //	@Router			/workouts [get]
-
 func (app *application) fetchWorkoutsHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -113,7 +117,7 @@ func (app *application) fetchWorkoutsHandler(w http.ResponseWriter, r *http.Requ
 //	@Accept			json
 //	@Produce		json
 //	@Param			workoutId	path		int	true	"Workout ID"
-//	@Success		200			{object}	store.Workout
+//	@Success		200			{object}	store.PresentableWorkout
 //	@Failure		404			{object}	error
 //	@Failure		500			{object}	error
 //	@Security		ApiKeyAuth

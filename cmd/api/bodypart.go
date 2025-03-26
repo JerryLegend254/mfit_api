@@ -55,7 +55,12 @@ func (app *application) createBodyPartHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	if err = app.store.BodyParts.Create(ctx, &bodyPart); err != nil {
-		app.internalServerError(w, r, err)
+		switch err {
+		case store.ErrDuplicate:
+			app.conflictError(w, r, store.ErrDuplicateName)
+		default:
+			app.internalServerError(w, r, err)
+		}
 		return
 	}
 

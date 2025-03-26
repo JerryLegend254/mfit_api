@@ -748,6 +748,43 @@ const docTemplate = `{
             }
         },
         "/workouts": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Fetch all workout",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workouts"
+                ],
+                "summary": "Fetch all workout",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.PresentableWorkout"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -829,7 +866,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/store.Workout"
+                            "$ref": "#/definitions/store.PresentableWorkout"
                         }
                     },
                     "404": {
@@ -908,7 +945,12 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "difficulty": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "beginner",
+                        "intermediate",
+                        "advanced"
+                    ]
                 },
                 "duration_minutes": {
                     "type": "integer"
@@ -996,6 +1038,50 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "store.PresentableWorkout": {
+            "type": "object",
+            "properties": {
+                "body_part": {
+                    "type": "string"
+                },
+                "calories_burned": {
+                    "type": "integer"
+                },
+                "difficulty": {
+                    "type": "string"
+                },
+                "duration_minutes": {
+                    "type": "integer"
+                },
+                "equipment": {
+                    "type": "string"
+                },
+                "gif_url": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "instructions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "primary_target": {
+                    "type": "string"
+                },
+                "secondary_targets": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
