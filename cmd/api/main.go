@@ -1,10 +1,9 @@
 package main
 
 import (
-	"log"
-
 	"github.com/JerryLegend254/mfit_api/internal/db"
 	"github.com/JerryLegend254/mfit_api/internal/env"
+	"github.com/JerryLegend254/mfit_api/internal/logger"
 	"github.com/JerryLegend254/mfit_api/internal/store"
 )
 
@@ -33,12 +32,13 @@ func main() {
 			maxIdleTimeout: env.GetString("DB_MAX_IDLE_TIMEOUT", "15m"),
 		},
 	}
+	logger := logger.NewLogger()
 
 	db, err := db.New(cfg.db.addr, cfg.db.maxOpenConns, cfg.db.maxIdleConns, cfg.db.maxIdleTimeout)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
-	log.Println("Database connection successful")
+	logger.Info("Database connection successful")
 
 	defer db.Close()
 
@@ -47,8 +47,9 @@ func main() {
 	app := &application{
 		config: cfg,
 		store:  store,
+		logger: logger,
 	}
 
 	mux := app.mount()
-	log.Fatal(app.run(mux))
+	logger.Fatal(app.run(mux))
 }

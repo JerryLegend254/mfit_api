@@ -23,7 +23,7 @@ func TestCreateBodyPart(t *testing.T) {
 
 	type response struct {
 		expectedStatusCode int
-		expectedBody       interface{}
+		expectedBody       []byte
 	}
 	tests := []struct {
 		name     string
@@ -34,35 +34,47 @@ func TestCreateBodyPart(t *testing.T) {
 			[]byte(`{}`),
 			response{
 				http.StatusBadRequest,
-				fmt.Sprintf(`{"error":%q}`, ErrBadRequest.Error()),
+				func() []byte {
+					res := fmt.Sprintf(`{"error":%q}`, ErrBadRequest.Error())
+					return []byte(res)
+				}(),
 			},
 		},
 		{"should return 400 - missing name",
 			[]byte(`{"image_url": "Test Image Url"}`),
 			response{
 				http.StatusBadRequest,
-				fmt.Sprintf(`{"error":%q}`, ErrBadRequest.Error()),
+				func() []byte {
+					res := fmt.Sprintf(`{"error":%q}`, ErrBadRequest.Error())
+					return []byte(res)
+				}(),
 			},
 		},
 		{"should return 400 - missing image_url",
 			[]byte(`{"name": "Test Name"}`),
 			response{
 				http.StatusBadRequest,
-				fmt.Sprintf(`{"error":%q}`, ErrBadRequest.Error()),
+				func() []byte {
+					res := fmt.Sprintf(`{"error":%q}`, ErrBadRequest.Error())
+					return []byte(res)
+				}(),
 			},
 		},
 		{"should return 400 - invalid json",
 			[]byte(`{"name": "Test Name", "image_url": "Test Image Url"`),
 			response{
 				http.StatusBadRequest,
-				fmt.Sprintf(`{"error":%q}`, ErrBadRequest.Error()),
+				func() []byte {
+					res := fmt.Sprintf(`{"error":%q}`, ErrBadRequest.Error())
+					return []byte(res)
+				}(),
 			},
 		},
 		{"should return 201",
 			[]byte(`{"name": "Test Name", "image_url": "Test Image Url"}`),
 			response{
 				http.StatusCreated,
-				`{"data":{"id": 0, "name": "Test Name", "image_url": "Test Image Url"}}`,
+				[]byte(`{"data":{"id": 0, "name": "Test Name", "image_url": "Test Image Url"}}`),
 			},
 		},
 	}
@@ -77,8 +89,6 @@ func TestCreateBodyPart(t *testing.T) {
 			// compare the status codes
 			assertStatusCode(t, res.Code, int(tt.response.expectedStatusCode))
 
-			fmt.Println("body", res.Body, tt.name)
-			fmt.Println("expectedBody", tt.response.expectedBody)
 			// compare the response bodies
 			assertResponse(t, res.Body, tt.response.expectedBody)
 

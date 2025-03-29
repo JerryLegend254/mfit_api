@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/JerryLegend254/mfit_api/docs"
+	"github.com/JerryLegend254/mfit_api/internal/logger"
 	"github.com/JerryLegend254/mfit_api/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -16,6 +16,7 @@ import (
 type application struct {
 	config config
 	store  store.Storage
+	logger logger.Logger
 }
 
 type config struct {
@@ -110,7 +111,7 @@ func (app *application) run(mux http.Handler) error {
 		IdleTimeout:  time.Minute,
 	}
 
-	log.Printf("server started at %s", srv.Addr)
+	app.logger.Info("server started at ", srv.Addr)
 
 	return srv.ListenAndServe()
 }
