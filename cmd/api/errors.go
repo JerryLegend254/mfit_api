@@ -1,8 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+)
+
+var (
+	ErrBadRequest = errors.New("invalid payload check request body")
 )
 
 func (app *application) internalServerError(w http.ResponseWriter, r *http.Request, err error) {
@@ -22,5 +27,5 @@ func (app *application) conflictError(w http.ResponseWriter, r *http.Request, er
 
 func (app *application) badRequest(w http.ResponseWriter, r *http.Request, err error) {
 	fmt.Println("bad request", "error", err.Error(), "method", r.Method, "path", r.URL.Path)
-	writeJSONError(w, http.StatusBadRequest, err.Error())
+	writeJSONError(w, http.StatusBadRequest, ErrBadRequest.Error())
 }
