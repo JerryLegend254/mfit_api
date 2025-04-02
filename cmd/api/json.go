@@ -7,6 +7,8 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+const jsonContentType = "application/json"
+
 var Validate *validator.Validate
 
 func init() {
@@ -14,7 +16,7 @@ func init() {
 }
 
 func writeJSON(w http.ResponseWriter, status int, data interface{}) error {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", jsonContentType)
 	w.WriteHeader(status)
 
 	return json.NewEncoder(w).Encode(data)

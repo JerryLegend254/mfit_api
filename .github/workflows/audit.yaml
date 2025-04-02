@@ -6,7 +6,7 @@ on:
     branches: [main]
 jobs:
   audit:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Set up Go
@@ -23,5 +23,57 @@ jobs:
         run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - name: Run staticcheck
         run: staticcheck ./...
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: ${{ secrets.DB_DATABASE }}
+          POSTGRES_USER: ${{ secrets.DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ${{ secrets.DB_USER }}"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DB_DATABASE: ${{ secrets.DB_DATABASE }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23.x"
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          until pg_isready -h localhost -p 5432 -U "$DB_USER"; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+      - name: Create Database (if not already created)
+        run: |
+          PGPASSWORD=$DB_PASSWORD psql -h localhost -U $DB_USER -d postgres -c "CREATE DATABASE $DB_DATABASE;"
       - name: Run Tests
-        run: go test -race ./...
+        run: go test -v ./...
+      runs-on: ubuntu-latest
+      env:
+        DB_DATABASE: ${{ secrets.DB_DATABASE}}
+        DB_USER: ${{ secrets.DB_USER}}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD}}
+      steps:
+        - uses: actions/checkout@v4
+        - name: Set up Go
+          uses: actions/setup-go@v4
+          with:
+            go-version: "1.23.x"
+        - name: Start MySQL
+          run: |
+            sudo /etc/init.d/mysql start
+            mysql -e "CREATE DATABASE IF NOT EXISTS $DB_DATABASE;" -u$DB_USER -p$DB_PASSWORD
+        - name: Test
+          run: go test -v ./...

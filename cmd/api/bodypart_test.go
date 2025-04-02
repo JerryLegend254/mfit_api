@@ -92,7 +92,34 @@ func TestCreateBodyPart(t *testing.T) {
 			// compare the response bodies
 			assertResponse(t, res.Body, tt.response.expectedBody)
 
+			// compare the content type header
+			assertContentType(t, res.Header().Get("content-type"), jsonContentType)
+
 		})
 	}
+
+}
+
+func TestGetBodyPart(t *testing.T) {
+	mockBodyPartStore := new(mocks.MockBodyPartStore)
+
+	store := store.Storage{
+		BodyParts: mockBodyPartStore,
+	}
+
+	app := newTestApplication(t, store)
+	mux := app.mount()
+	t.Run("invalid route path", func(t *testing.T) {
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/bodyparts/1", nil)
+
+		res := httptest.NewRecorder()
+
+		mux.ServeHTTP(res, req)
+
+		assertStatusCode(t, res.Code, http.StatusOK)
+
+		assertContentType(t, res.Result().Header.Get("content-type"), jsonContentType)
+
+	})
 
 }
