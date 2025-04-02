@@ -57,8 +57,5 @@ jobs:
             echo "Waiting for PostgreSQL..."
             sleep 2
           done
-      - name: Create Database (if not already created)
-        run: |
-          PGPASSWORD=$DB_PASSWORD psql -h localhost -U $DB_USER -d postgres -c "CREATE DATABASE $DB_DATABASE;"
       - name: Run Tests
         run: go test -v ./...
