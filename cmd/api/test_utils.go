@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"testing"
 
@@ -15,6 +17,10 @@ import (
 
 	"github.com/JerryLegend254/mfit_api/internal/logger"
 	"github.com/JerryLegend254/mfit_api/internal/store"
+)
+
+const (
+	BASE_PATH_URL = "/api/v1/"
 )
 
 func newTestApplication(t testing.TB, store store.Storage) *application {
@@ -99,4 +105,16 @@ func runMigrations(db *sql.DB, migrationsPath string) (*migrate.Migrate, error) 
 	}
 
 	return m, nil
+}
+
+func execRequest(mux http.Handler, req *http.Request) *httptest.ResponseRecorder {
+	res := httptest.NewRecorder()
+
+	mux.ServeHTTP(res, req)
+
+	return res
+}
+
+func newCollectionPath(collection string) string {
+	return fmt.Sprintf("%s%s", BASE_PATH_URL, collection)
 }

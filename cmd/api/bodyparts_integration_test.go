@@ -1,14 +1,13 @@
 package main
 
 import (
-	"context"
-	"reflect"
+	"net/http"
 	"testing"
 
 	"github.com/JerryLegend254/mfit_api/internal/store"
 )
 
-func TestBodyPartStore(t *testing.T) {
+func TestBodyPartIT(t *testing.T) {
 	db, teardown := newTestDB(t)
 	defer teardown()
 
@@ -22,47 +21,25 @@ func TestBodyPartStore(t *testing.T) {
 	s := store.NewStorage(db)
 
 	app := newTestApplication(t, s)
-	tests := []struct {
+	mux := app.mount()
+
+	ts := []struct {
 		name string
-		args []interface{}
-		want interface{}
-		f    interface{}
+		req  *http.Request
+		want []byte
 	}{
-		{"create bodypart", []interface{}{context.Background(), &store.BodyPart{Name: "Test Name", ImageUrl: "Test Image Url"}}, &store.BodyPart{ID: 2, Name: "Test Name", ImageUrl: "Test Image Url"}, app.store.BodyParts.Create},
-		{"get on bodypart", []interface{}{context.Background(), int64(1)}, &store.BodyPart{ID: 1, Name: "Test 1", ImageUrl: "Image Url 1"}, app.store.BodyParts.GetByID},
-		{"get all bodypart", []interface{}{context.Background()}, []store.BodyPart{{ID: 1, Name: "Test 1", ImageUrl: "Image Url 1"}, {ID: 2, Name: "Test Name", ImageUrl: "Test Image Url"}}, app.store.BodyParts.GetAll},
-		{"update bodypart", []interface{}{context.Background(), &store.BodyPart{ID: 2, Name: "Updated Test Name", ImageUrl: "Test Image Url"}}, nil, app.store.BodyParts.Update},
-		{"delete update bodypart", []interface{}{context.Background(), int64(1)}, nil, app.store.BodyParts.Delete},
+		{"create bodypart", newPostBodyPartRequest([]byte(`{"name": "Test Name", "image_url": "Test Image Url"}`)), []byte(`{"data": {"id": 2, "name": "Test Name", "image_url": "Test Image Url"}}`)},
+		{"get one bodypart", newGetBodyPartRequest(1), []byte(`{"data": {"id": 1, "name": "Test 1", "image_url": "Image Url 1"}}`)},
+		{"get all bodyparts", newGetBodyPartsRequest(), []byte(`{"data": [{"id": 1, "name": "Test 1", "image_url": "Image Url 1"},{"id": 2, "name": "Test Name", "image_url": "Test Image Url"}]}`)},
+		{"update bodypart", newPatchBodyPartRequest(2, []byte(`{"name": "Update Title", "image_url": "Updated Image Url"}`)), []byte(`{"data": {"id": 2, "name": "Update Title", "image_url": "Updated Image Url"}}`)},
+		{"delete bodypart", newDeleteBodyPartRequest(1), nil},
 	}
 
-	for _, tt := range tests {
+	for _, tt := range ts {
 		t.Run(tt.name, func(t *testing.T) {
-
-			results := invokeFunction(tt.f, tt.args)
-
-			for _, result := range results {
-				if result.CanInterface() && result.Interface() != nil {
-
-					if !reflect.DeepEqual(result.Interface(), tt.want) {
-						t.Errorf("wanted %v but got %v", tt.want, result.Interface())
-
-					}
-				}
-			}
-
+			res := execRequest(mux, tt.req)
+			assertResponse(t, res.Body, tt.want)
 		})
-
 	}
 
-}
-
-func invokeFunction(fn interface{}, args []interface{}) []reflect.Value {
-	fnValue := reflect.ValueOf(fn)
-	fnArgs := make([]reflect.Value, len(args))
-
-	for i, arg := range args {
-		fnArgs[i] = reflect.ValueOf(arg)
-	}
-
-	return fnValue.Call(fnArgs)
 }

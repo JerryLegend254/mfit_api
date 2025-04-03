@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/JerryLegend254/mfit_api/internal/store"
 	"github.com/JerryLegend254/mfit_api/internal/store/mocks"
+)
+
+var (
+	BodyPartUrl = newCollectionPath("bodyparts")
 )
 
 func TestCreateBodyPart(t *testing.T) {
@@ -81,10 +84,9 @@ func TestCreateBodyPart(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// create the response
-			req, _ := http.NewRequest(http.MethodPost, "/api/v1/bodyparts", bytes.NewReader(tt.payload))
-			res := httptest.NewRecorder()
+			req := newPostBodyPartRequest(tt.payload)
 
-			mux.ServeHTTP(res, req)
+			res := execRequest(mux, req)
 
 			// compare the status codes
 			assertStatusCode(t, res.Code, int(tt.response.expectedStatusCode))
@@ -109,12 +111,10 @@ func TestGetBodyPart(t *testing.T) {
 
 	app := newTestApplication(t, store)
 	mux := app.mount()
-	t.Run("invalid route path", func(t *testing.T) {
-		req, _ := http.NewRequest(http.MethodGet, "/api/v1/bodyparts/1", nil)
+	t.Run("valid route path", func(t *testing.T) {
+		req := newGetBodyPartRequest(1)
 
-		res := httptest.NewRecorder()
-
-		mux.ServeHTTP(res, req)
+		res := execRequest(mux, req)
 
 		assertStatusCode(t, res.Code, http.StatusOK)
 
@@ -122,4 +122,29 @@ func TestGetBodyPart(t *testing.T) {
 
 	})
 
+}
+
+func newPostBodyPartRequest(payload []byte) *http.Request {
+	req, _ := http.NewRequest(http.MethodPost, BodyPartUrl, bytes.NewReader(payload))
+	return req
+}
+
+func newGetBodyPartRequest(id int64) *http.Request {
+	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%d", BodyPartUrl, id), nil)
+	return req
+}
+
+func newGetBodyPartsRequest() *http.Request {
+	req, _ := http.NewRequest(http.MethodGet, BodyPartUrl, nil)
+	return req
+}
+
+func newPatchBodyPartRequest(id int64, payload []byte) *http.Request {
+	req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("%s/%d", BodyPartUrl, id), bytes.NewReader(payload))
+	return req
+}
+
+func newDeleteBodyPartRequest(id int64) *http.Request {
+	req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("%s/%d", BodyPartUrl, id), nil)
+	return req
 }
